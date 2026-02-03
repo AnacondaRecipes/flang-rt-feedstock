@@ -1,6 +1,0 @@
-build_parameters:
-  - "--suppress-variables"
-  - "--error-overlinking"
-
-# Stage 2: Build with flang 21.1.8
-staging_channel_upload_target: llvm-21.1.8-stage2-build-0
