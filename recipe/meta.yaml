@@ -71,7 +71,7 @@ outputs:
         - llvmdev =={{ version }}
         - mlir =={{ version }}
       run:
-        - clangdev =={{ version }}
+        - clang =={{ version }}
         - flang =={{ version }}
     test:
       commands:
@@ -85,13 +85,19 @@ outputs:
 
 about:
   home: https://flang.llvm.org
-  license: Apache-2.0
+  license: Apache-2.0 WITH LLVM-exception
   license_file: flang/LICENSE.TXT
-  summary: Flang is a Fortran compiler targeting LLVM.
+  license_family: Apache
+  summary: Flang runtime library for LLVM's Fortran compiler
+  description: |
+    flang-rt provides the Fortran runtime library for LLVM's Flang compiler.
+    This runtime is required for executing Fortran programs compiled with Flang.
+    In LLVM 21, the Fortran runtime was reorganized from libFortranRuntime to
+    flang_rt.runtime, built using the LLVM_ENABLE_RUNTIMES mechanism.
   dev_url: https://github.com/llvm/llvm-project
+  doc_url: https://flang.llvm.org/docs/
 
 extra:
   recipe-maintainers:
     - conda-forge/flang
     - h-vetinari
-  feedstock-name: flang-rt
