@@ -30,7 +30,7 @@ cmake -G Ninja \
     -DFLANG_RT_INCLUDE_TESTS=OFF \
     ../runtimes
 
-cmake --build . -j2
+cmake --build . -j${CPU_COUNT}
 cmake --install .
 
 ln -s $PREFIX/lib/clang/$MAJOR_VER/lib/x86_64-unknown-linux-gnu/libflang_rt.runtime.a $PREFIX/lib/libflang_rt.runtime.a
