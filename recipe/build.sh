@@ -30,10 +30,20 @@ cmake -G Ninja \
     -DFLANG_RT_INCLUDE_TESTS=OFF \
     ../runtimes
 
-cmake --build . -j2
+cmake --build . -j${CPU_COUNT}
 cmake --install .
 
-ln -s $PREFIX/lib/clang/$MAJOR_VER/lib/x86_64-unknown-linux-gnu/libflang_rt.runtime.a $PREFIX/lib/libflang_rt.runtime.a
+# Determine target triple based on platform
+if [[ "$target_platform" == "linux-64" ]]; then
+    TARGET_TRIPLE="x86_64-unknown-linux-gnu"
+elif [[ "$target_platform" == "linux-aarch64" ]]; then
+    TARGET_TRIPLE="aarch64-unknown-linux-gnu"
+else
+    echo "ERROR: Unsupported target_platform: $target_platform"
+    exit 1
+fi
+
+ln -s $PREFIX/lib/clang/$MAJOR_VER/lib/$TARGET_TRIPLE/libflang_rt.runtime.a $PREFIX/lib/libflang_rt.runtime.a
 # here we copy rather than symlink, because the target-specific path ends up in `flang-rt_<target>`,
 # whereas the regular path under $PREFIX/lib goes into `libflang-rt`
-cp $PREFIX/lib/clang/$MAJOR_VER/lib/x86_64-unknown-linux-gnu/libflang_rt.runtime.so $PREFIX/lib/libflang_rt.runtime.so
+cp $PREFIX/lib/clang/$MAJOR_VER/lib/$TARGET_TRIPLE/libflang_rt.runtime.so $PREFIX/lib/libflang_rt.runtime.so

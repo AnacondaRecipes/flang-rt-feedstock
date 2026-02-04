@@ -17,7 +17,7 @@ build:
 requirements:
   build:
     - cmake
-    - ninja
+    - ninja-base
     - {{ stdlib('c') }}
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
@@ -54,8 +54,10 @@ outputs:
     build:
       noarch: generic
     files:
-      - lib/clang/{{ major }}/lib/x86_64-unknown-linux-gnu/libflang_rt.runtime.a                # [linux]
-      - lib/clang/{{ major }}/lib/x86_64-unknown-linux-gnu/libflang_rt.runtime.so               # [linux]
+      - lib/clang/{{ major }}/lib/x86_64-unknown-linux-gnu/libflang_rt.runtime.a                # [linux64]
+      - lib/clang/{{ major }}/lib/x86_64-unknown-linux-gnu/libflang_rt.runtime.so               # [linux64]
+      - lib/clang/{{ major }}/lib/aarch64-unknown-linux-gnu/libflang_rt.runtime.a               # [aarch64]
+      - lib/clang/{{ major }}/lib/aarch64-unknown-linux-gnu/libflang_rt.runtime.so              # [aarch64]
       # corresponding to different flavours of the MSVC runtime, i.e. `/MD`, `/MDd`, `/MT`, `/MTd`
       - Library/lib/clang/{{ major }}/lib/x86_64-pc-windows-msvc/flang_rt.runtime.static.lib    # [win]
       - Library/lib/clang/{{ major }}/lib/x86_64-pc-windows-msvc/flang_rt.runtime.dynamic.lib   # [win]
@@ -71,13 +73,15 @@ outputs:
         - llvmdev =={{ version }}
         - mlir =={{ version }}
       run:
-        - clangdev =={{ version }}
+        - clang =={{ version }}
         - flang =={{ version }}
     test:
       commands:
         # target-specific runtime library location (default for flang)
-        - test -f $PREFIX/lib/clang/{{ major }}/lib/x86_64-unknown-linux-gnu/libflang_rt.runtime.a                      # [linux]
-        - test -f $PREFIX/lib/clang/{{ major }}/lib/x86_64-unknown-linux-gnu/libflang_rt.runtime.so                     # [linux]
+        - test -f $PREFIX/lib/clang/{{ major }}/lib/x86_64-unknown-linux-gnu/libflang_rt.runtime.a                      # [linux64]
+        - test -f $PREFIX/lib/clang/{{ major }}/lib/x86_64-unknown-linux-gnu/libflang_rt.runtime.so                     # [linux64]
+        - test -f $PREFIX/lib/clang/{{ major }}/lib/aarch64-unknown-linux-gnu/libflang_rt.runtime.a                     # [aarch64]
+        - test -f $PREFIX/lib/clang/{{ major }}/lib/aarch64-unknown-linux-gnu/libflang_rt.runtime.so                    # [aarch64]
         - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\x86_64-pc-windows-msvc\flang_rt.runtime.static.lib exit 1    # [win]
         - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\x86_64-pc-windows-msvc\flang_rt.runtime.dynamic.lib exit 1   # [win]
         - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\x86_64-pc-windows-msvc\flang_rt.runtime.static_dbg.lib exit 1    # [win]
@@ -85,13 +89,19 @@ outputs:
 
 about:
   home: https://flang.llvm.org
-  license: Apache-2.0
+  license: Apache-2.0 WITH LLVM-exception
   license_file: flang/LICENSE.TXT
-  summary: Flang is a Fortran compiler targeting LLVM.
+  license_family: Apache
+  summary: Flang runtime library for LLVM's Fortran compiler
+  description: |
+    flang-rt provides the Fortran runtime library for LLVM's Flang compiler.
+    This runtime is required for executing Fortran programs compiled with Flang.
+    In LLVM 21, the Fortran runtime was reorganized from libFortranRuntime to
+    flang_rt.runtime, built using the LLVM_ENABLE_RUNTIMES mechanism.
   dev_url: https://github.com/llvm/llvm-project
+  doc_url: https://flang.llvm.org/docs/
 
 extra:
   recipe-maintainers:
     - conda-forge/flang
     - h-vetinari
-  feedstock-name: flang-rt
