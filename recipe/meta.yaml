@@ -50,7 +50,7 @@ outputs:
     test:
       commands:
         # shared library; copied from target-specific location
-        - test -f $PREFIX/lib/libflang_rt.runtime.so    # [linux]
+        - test -f $PREFIX/lib/libflang_rt.runtime.so
 
   - name: flang-rt_{{ target_platform }}
     build:
