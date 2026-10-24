@@ -1,19 +1,5 @@
 {% set version = "23.1.4" %}
 {% set major = version.split(".")[0] %}
-# test program for the intrinsic modules (no "::" so the lines stay plain YAML and shell/cmd safe)
-{% set test_f90 = [
-  "program t",
-  "use iso_fortran_env",
-  "use iso_c_binding",
-  "implicit none",
-  "integer(c_int) i",
-  "real(real64) x",
-  "i = 42",
-  "x = real(i, c_double)",
-  "if (int(x, int64) .ne. 42_int64) error stop 1",
-  "print *, compiler_version()",
-  "end program t",
-] %}
 
 package:
   name: flang-rt-split
@@ -109,15 +95,44 @@ outputs:
         - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\x86_64-pc-windows-msvc\flang_rt.runtime.static_dbg.lib exit 1    # [win]
         - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\x86_64-pc-windows-msvc\flang_rt.runtime.dynamic_dbg.lib exit 1   # [win]
         # intrinsic modules in flang's default search path (<resource dir>/finclude/flang/<triple>)
-        {% for mod in ["iso_fortran_env", "iso_c_binding", "ieee_arithmetic", "ieee_exceptions", "__fortran_builtins"] %}
-        - test -f $PREFIX/lib/clang/{{ major }}/finclude/flang/x86_64-unknown-linux-gnu/{{ mod }}.mod     # [linux64]
-        - test -f $PREFIX/lib/clang/{{ major }}/finclude/flang/aarch64-unknown-linux-gnu/{{ mod }}.mod    # [aarch64]
-        - if not exist %LIBRARY_LIB%\clang\{{ major }}\finclude\flang\x86_64-pc-windows-msvc\{{ mod }}.mod exit 1    # [win]
-        {% endfor %}
-        {% for line in test_f90 %}
-        - echo '{{ line }}' >> test_modules.f90   # [unix]
-        - echo {{ line }} >> test_modules.f90     # [win]
-        {% endfor %}
+        - test -f $PREFIX/lib/clang/{{ major }}/finclude/flang/x86_64-unknown-linux-gnu/iso_fortran_env.mod     # [linux64]
+        - test -f $PREFIX/lib/clang/{{ major }}/finclude/flang/x86_64-unknown-linux-gnu/iso_c_binding.mod     # [linux64]
+        - test -f $PREFIX/lib/clang/{{ major }}/finclude/flang/x86_64-unknown-linux-gnu/ieee_arithmetic.mod     # [linux64]
+        - test -f $PREFIX/lib/clang/{{ major }}/finclude/flang/x86_64-unknown-linux-gnu/ieee_exceptions.mod     # [linux64]
+        - test -f $PREFIX/lib/clang/{{ major }}/finclude/flang/x86_64-unknown-linux-gnu/__fortran_builtins.mod     # [linux64]
+        - test -f $PREFIX/lib/clang/{{ major }}/finclude/flang/aarch64-unknown-linux-gnu/iso_fortran_env.mod    # [aarch64]
+        - test -f $PREFIX/lib/clang/{{ major }}/finclude/flang/aarch64-unknown-linux-gnu/iso_c_binding.mod    # [aarch64]
+        - test -f $PREFIX/lib/clang/{{ major }}/finclude/flang/aarch64-unknown-linux-gnu/ieee_arithmetic.mod    # [aarch64]
+        - test -f $PREFIX/lib/clang/{{ major }}/finclude/flang/aarch64-unknown-linux-gnu/ieee_exceptions.mod    # [aarch64]
+        - test -f $PREFIX/lib/clang/{{ major }}/finclude/flang/aarch64-unknown-linux-gnu/__fortran_builtins.mod    # [aarch64]
+        - if not exist %LIBRARY_LIB%\clang\{{ major }}\finclude\flang\x86_64-pc-windows-msvc\iso_fortran_env.mod exit 1    # [win]
+        - if not exist %LIBRARY_LIB%\clang\{{ major }}\finclude\flang\x86_64-pc-windows-msvc\iso_c_binding.mod exit 1    # [win]
+        - if not exist %LIBRARY_LIB%\clang\{{ major }}\finclude\flang\x86_64-pc-windows-msvc\ieee_arithmetic.mod exit 1    # [win]
+        - if not exist %LIBRARY_LIB%\clang\{{ major }}\finclude\flang\x86_64-pc-windows-msvc\ieee_exceptions.mod exit 1    # [win]
+        - if not exist %LIBRARY_LIB%\clang\{{ major }}\finclude\flang\x86_64-pc-windows-msvc\__fortran_builtins.mod exit 1    # [win]
+        # test program for the intrinsic modules (no "::", so each line stays plain YAML and shell/cmd safe)
+        - echo 'program t' >> test_modules.f90   # [unix]
+        - echo 'use iso_fortran_env' >> test_modules.f90   # [unix]
+        - echo 'use iso_c_binding' >> test_modules.f90   # [unix]
+        - echo 'implicit none' >> test_modules.f90   # [unix]
+        - echo 'integer(c_int) i' >> test_modules.f90   # [unix]
+        - echo 'real(real64) x' >> test_modules.f90   # [unix]
+        - echo 'i = 42' >> test_modules.f90   # [unix]
+        - echo 'x = real(i, c_double)' >> test_modules.f90   # [unix]
+        - echo 'if (int(x, int64) .ne. 42_int64) error stop 1' >> test_modules.f90   # [unix]
+        - echo 'print *, compiler_version()' >> test_modules.f90   # [unix]
+        - echo 'end program t' >> test_modules.f90   # [unix]
+        - echo program t >> test_modules.f90     # [win]
+        - echo use iso_fortran_env >> test_modules.f90     # [win]
+        - echo use iso_c_binding >> test_modules.f90     # [win]
+        - echo implicit none >> test_modules.f90     # [win]
+        - echo integer(c_int) i >> test_modules.f90     # [win]
+        - echo real(real64) x >> test_modules.f90     # [win]
+        - echo i = 42 >> test_modules.f90     # [win]
+        - echo x = real(i, c_double) >> test_modules.f90     # [win]
+        - echo if (int(x, int64) .ne. 42_int64) error stop 1 >> test_modules.f90     # [win]
+        - echo print *, compiler_version() >> test_modules.f90     # [win]
+        - echo end program t >> test_modules.f90     # [win]
         # flang finds the modules on its own, without -fintrinsic-modules-path
         - flang -c test_modules.f90 -o test_modules.o
         # link against the runtime from this package and run (Linux; Windows links through flang-activation)
