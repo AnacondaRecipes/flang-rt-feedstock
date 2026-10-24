@@ -33,7 +33,7 @@ requirements:
     - cmake
     - ninja-base
     # runtimes/CMakeLists.txt requires Python3
-    - python
+    - python *
     - {{ stdlib('c') }}
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
