@@ -1,5 +1,7 @@
 {% set version = "23.1.4" %}
 {% set major = version.split(".")[0] %}
+{% set win_triple = "x86_64-pc-windows-msvc" %}
+{% set win_triple = "aarch64-pc-windows-msvc" %}  # [win and arm64]
 
 package:
   name: flang-rt-split
@@ -63,12 +65,12 @@ outputs:
       # Fortran intrinsic modules (iso_fortran_env, iso_c_binding, ieee_*, ...); built by flang-rt since LLVM 23
       - lib/clang/{{ major }}/finclude/flang/x86_64-unknown-linux-gnu                           # [linux64]
       - lib/clang/{{ major }}/finclude/flang/aarch64-unknown-linux-gnu                          # [aarch64]
-      - Library/lib/clang/{{ major }}/finclude/flang/x86_64-pc-windows-msvc                     # [win]
+      - Library/lib/clang/{{ major }}/finclude/flang/{{ win_triple }}                     # [win]
       # corresponding to different flavours of the MSVC runtime, i.e. `/MD`, `/MDd`, `/MT`, `/MTd`
-      - Library/lib/clang/{{ major }}/lib/x86_64-pc-windows-msvc/flang_rt.runtime.static.lib    # [win]
-      - Library/lib/clang/{{ major }}/lib/x86_64-pc-windows-msvc/flang_rt.runtime.dynamic.lib   # [win]
-      - Library/lib/clang/{{ major }}/lib/x86_64-pc-windows-msvc/flang_rt.runtime.static_dbg.lib    # [win]
-      - Library/lib/clang/{{ major }}/lib/x86_64-pc-windows-msvc/flang_rt.runtime.dynamic_dbg.lib   # [win]
+      - Library/lib/clang/{{ major }}/lib/{{ win_triple }}/flang_rt.runtime.static.lib    # [win]
+      - Library/lib/clang/{{ major }}/lib/{{ win_triple }}/flang_rt.runtime.dynamic.lib   # [win]
+      - Library/lib/clang/{{ major }}/lib/{{ win_triple }}/flang_rt.runtime.static_dbg.lib    # [win]
+      - Library/lib/clang/{{ major }}/lib/{{ win_triple }}/flang_rt.runtime.dynamic_dbg.lib   # [win]
     requirements:
       build:
         # for strong run-exports
@@ -90,10 +92,10 @@ outputs:
         - test -f $PREFIX/lib/clang/{{ major }}/lib/x86_64-unknown-linux-gnu/libflang_rt.runtime.so                     # [linux64]
         - test -f $PREFIX/lib/clang/{{ major }}/lib/aarch64-unknown-linux-gnu/libflang_rt.runtime.a                     # [aarch64]
         - test -f $PREFIX/lib/clang/{{ major }}/lib/aarch64-unknown-linux-gnu/libflang_rt.runtime.so                    # [aarch64]
-        - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\x86_64-pc-windows-msvc\flang_rt.runtime.static.lib exit 1    # [win]
-        - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\x86_64-pc-windows-msvc\flang_rt.runtime.dynamic.lib exit 1   # [win]
-        - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\x86_64-pc-windows-msvc\flang_rt.runtime.static_dbg.lib exit 1    # [win]
-        - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\x86_64-pc-windows-msvc\flang_rt.runtime.dynamic_dbg.lib exit 1   # [win]
+        - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\{{ win_triple }}\flang_rt.runtime.static.lib exit 1    # [win]
+        - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\{{ win_triple }}\flang_rt.runtime.dynamic.lib exit 1   # [win]
+        - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\{{ win_triple }}\flang_rt.runtime.static_dbg.lib exit 1    # [win]
+        - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\{{ win_triple }}\flang_rt.runtime.dynamic_dbg.lib exit 1   # [win]
         # intrinsic modules in flang's default search path (<resource dir>/finclude/flang/<triple>)
         - test -f $PREFIX/lib/clang/{{ major }}/finclude/flang/x86_64-unknown-linux-gnu/iso_fortran_env.mod     # [linux64]
         - test -f $PREFIX/lib/clang/{{ major }}/finclude/flang/x86_64-unknown-linux-gnu/iso_c_binding.mod     # [linux64]
@@ -105,11 +107,11 @@ outputs:
         - test -f $PREFIX/lib/clang/{{ major }}/finclude/flang/aarch64-unknown-linux-gnu/ieee_arithmetic.mod    # [aarch64]
         - test -f $PREFIX/lib/clang/{{ major }}/finclude/flang/aarch64-unknown-linux-gnu/ieee_exceptions.mod    # [aarch64]
         - test -f $PREFIX/lib/clang/{{ major }}/finclude/flang/aarch64-unknown-linux-gnu/__fortran_builtins.mod    # [aarch64]
-        - if not exist %LIBRARY_LIB%\clang\{{ major }}\finclude\flang\x86_64-pc-windows-msvc\iso_fortran_env.mod exit 1    # [win]
-        - if not exist %LIBRARY_LIB%\clang\{{ major }}\finclude\flang\x86_64-pc-windows-msvc\iso_c_binding.mod exit 1    # [win]
-        - if not exist %LIBRARY_LIB%\clang\{{ major }}\finclude\flang\x86_64-pc-windows-msvc\ieee_arithmetic.mod exit 1    # [win]
-        - if not exist %LIBRARY_LIB%\clang\{{ major }}\finclude\flang\x86_64-pc-windows-msvc\ieee_exceptions.mod exit 1    # [win]
-        - if not exist %LIBRARY_LIB%\clang\{{ major }}\finclude\flang\x86_64-pc-windows-msvc\__fortran_builtins.mod exit 1    # [win]
+        - if not exist %LIBRARY_LIB%\clang\{{ major }}\finclude\flang\{{ win_triple }}\iso_fortran_env.mod exit 1    # [win]
+        - if not exist %LIBRARY_LIB%\clang\{{ major }}\finclude\flang\{{ win_triple }}\iso_c_binding.mod exit 1    # [win]
+        - if not exist %LIBRARY_LIB%\clang\{{ major }}\finclude\flang\{{ win_triple }}\ieee_arithmetic.mod exit 1    # [win]
+        - if not exist %LIBRARY_LIB%\clang\{{ major }}\finclude\flang\{{ win_triple }}\ieee_exceptions.mod exit 1    # [win]
+        - if not exist %LIBRARY_LIB%\clang\{{ major }}\finclude\flang\{{ win_triple }}\__fortran_builtins.mod exit 1    # [win]
         # test program for the intrinsic modules (no "::", so each line stays plain YAML and shell/cmd safe)
         - echo 'program t' >> test_modules.f90   # [unix]
         - echo 'use iso_fortran_env' >> test_modules.f90   # [unix]
