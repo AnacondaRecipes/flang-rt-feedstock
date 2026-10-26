@@ -86,61 +86,15 @@ outputs:
     test:
       requires:
         - {{ compiler('c') }}    # [linux]
+      files:
+        - test_modules.f90
+        - test_flang_rt.sh       # [unix]
+        - test_flang_rt.bat      # [win]
       commands:
-        # target-specific runtime library location (default for flang)
-        - test -f $PREFIX/lib/clang/{{ major }}/lib/x86_64-unknown-linux-gnu/libflang_rt.runtime.a                      # [linux64]
-        - test -f $PREFIX/lib/clang/{{ major }}/lib/x86_64-unknown-linux-gnu/libflang_rt.runtime.so                     # [linux64]
-        - test -f $PREFIX/lib/clang/{{ major }}/lib/aarch64-unknown-linux-gnu/libflang_rt.runtime.a                     # [aarch64]
-        - test -f $PREFIX/lib/clang/{{ major }}/lib/aarch64-unknown-linux-gnu/libflang_rt.runtime.so                    # [aarch64]
-        - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\{{ win_triple }}\flang_rt.runtime.static.lib exit 1    # [win]
-        - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\{{ win_triple }}\flang_rt.runtime.dynamic.lib exit 1   # [win]
-        - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\{{ win_triple }}\flang_rt.runtime.static_dbg.lib exit 1    # [win]
-        - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\{{ win_triple }}\flang_rt.runtime.dynamic_dbg.lib exit 1   # [win]
-        # intrinsic modules in flang's default search path (<resource dir>/finclude/flang/<triple>)
-        - test -f $PREFIX/lib/clang/{{ major }}/finclude/flang/x86_64-unknown-linux-gnu/iso_fortran_env.mod     # [linux64]
-        - test -f $PREFIX/lib/clang/{{ major }}/finclude/flang/x86_64-unknown-linux-gnu/iso_c_binding.mod     # [linux64]
-        - test -f $PREFIX/lib/clang/{{ major }}/finclude/flang/x86_64-unknown-linux-gnu/ieee_arithmetic.mod     # [linux64]
-        - test -f $PREFIX/lib/clang/{{ major }}/finclude/flang/x86_64-unknown-linux-gnu/ieee_exceptions.mod     # [linux64]
-        - test -f $PREFIX/lib/clang/{{ major }}/finclude/flang/x86_64-unknown-linux-gnu/__fortran_builtins.mod     # [linux64]
-        - test -f $PREFIX/lib/clang/{{ major }}/finclude/flang/aarch64-unknown-linux-gnu/iso_fortran_env.mod    # [aarch64]
-        - test -f $PREFIX/lib/clang/{{ major }}/finclude/flang/aarch64-unknown-linux-gnu/iso_c_binding.mod    # [aarch64]
-        - test -f $PREFIX/lib/clang/{{ major }}/finclude/flang/aarch64-unknown-linux-gnu/ieee_arithmetic.mod    # [aarch64]
-        - test -f $PREFIX/lib/clang/{{ major }}/finclude/flang/aarch64-unknown-linux-gnu/ieee_exceptions.mod    # [aarch64]
-        - test -f $PREFIX/lib/clang/{{ major }}/finclude/flang/aarch64-unknown-linux-gnu/__fortran_builtins.mod    # [aarch64]
-        - if not exist %LIBRARY_LIB%\clang\{{ major }}\finclude\flang\{{ win_triple }}\iso_fortran_env.mod exit 1    # [win]
-        - if not exist %LIBRARY_LIB%\clang\{{ major }}\finclude\flang\{{ win_triple }}\iso_c_binding.mod exit 1    # [win]
-        - if not exist %LIBRARY_LIB%\clang\{{ major }}\finclude\flang\{{ win_triple }}\ieee_arithmetic.mod exit 1    # [win]
-        - if not exist %LIBRARY_LIB%\clang\{{ major }}\finclude\flang\{{ win_triple }}\ieee_exceptions.mod exit 1    # [win]
-        - if not exist %LIBRARY_LIB%\clang\{{ major }}\finclude\flang\{{ win_triple }}\__fortran_builtins.mod exit 1    # [win]
-        # test program for the intrinsic modules (no "::", so each line stays plain YAML and shell/cmd safe)
-        - echo 'program t' >> test_modules.f90   # [unix]
-        - echo 'use iso_fortran_env' >> test_modules.f90   # [unix]
-        - echo 'use iso_c_binding' >> test_modules.f90   # [unix]
-        - echo 'implicit none' >> test_modules.f90   # [unix]
-        - echo 'integer(c_int) i' >> test_modules.f90   # [unix]
-        - echo 'real(real64) x' >> test_modules.f90   # [unix]
-        - echo 'i = 42' >> test_modules.f90   # [unix]
-        - echo 'x = real(i, c_double)' >> test_modules.f90   # [unix]
-        - echo 'if (int(x, int64) .ne. 42_int64) error stop 1' >> test_modules.f90   # [unix]
-        - echo 'print *, compiler_version()' >> test_modules.f90   # [unix]
-        - echo 'end program t' >> test_modules.f90   # [unix]
-        - echo program t >> test_modules.f90     # [win]
-        - echo use iso_fortran_env >> test_modules.f90     # [win]
-        - echo use iso_c_binding >> test_modules.f90     # [win]
-        - echo implicit none >> test_modules.f90     # [win]
-        - echo integer(c_int) i >> test_modules.f90     # [win]
-        - echo real(real64) x >> test_modules.f90     # [win]
-        - echo i = 42 >> test_modules.f90     # [win]
-        - echo x = real(i, c_double) >> test_modules.f90     # [win]
-        - echo if (int(x, int64) .ne. 42_int64) error stop 1 >> test_modules.f90     # [win]
-        - echo print *, compiler_version() >> test_modules.f90     # [win]
-        - echo end program t >> test_modules.f90     # [win]
-        # flang finds the modules on its own, without -fintrinsic-modules-path
-        - flang -c test_modules.f90 -o test_modules.o
-        # link against the runtime from this package and run (Linux; Windows links through flang-activation)
-        - ${CC} test_modules.o -L$PREFIX/lib/clang/{{ major }}/lib/x86_64-unknown-linux-gnu -Wl,-rpath,$PREFIX/lib/clang/{{ major }}/lib/x86_64-unknown-linux-gnu -lflang_rt.runtime -o test_modules    # [linux64]
-        - ${CC} test_modules.o -L$PREFIX/lib/clang/{{ major }}/lib/aarch64-unknown-linux-gnu -Wl,-rpath,$PREFIX/lib/clang/{{ major }}/lib/aarch64-unknown-linux-gnu -lflang_rt.runtime -o test_modules   # [aarch64]
-        - ./test_modules    # [linux]
+        # runtime libraries and intrinsic modules in flang's default locations; compile (all platforms),
+        # link and run (Linux; Windows links through flang-activation) a program using the modules
+        - bash test_flang_rt.sh {{ major }}                      # [unix]
+        - call test_flang_rt.bat {{ major }} {{ win_triple }}    # [win]
 
 about:
   home: https://flang.llvm.org
