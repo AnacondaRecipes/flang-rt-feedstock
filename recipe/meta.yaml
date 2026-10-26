@@ -1,5 +1,7 @@
-{% set version = "22.1.2" %}
+{% set version = "23.1.4" %}
 {% set major = version.split(".")[0] %}
+{% set win_triple = "x86_64-pc-windows-msvc" %}
+{% set win_triple = "aarch64-pc-windows-msvc" %}  # [win and arm64]
 
 package:
   name: flang-rt-split
@@ -7,7 +9,7 @@ package:
 
 source:
   url: https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-{{ version.replace(".rc", "-rc") }}.tar.gz
-  sha256: a252efd7a4a268d2cc5145b17adcaa82757fdee1d06d748b4c24137807710ecb
+  sha256: 3e1c70b30f623976c2046d94b8eeab6cac536f107914cb4ed7bac572a03131db
 
 build:
   number: 0
@@ -18,6 +20,8 @@ requirements:
   build:
     - cmake
     - ninja-base
+    # runtimes/CMakeLists.txt requires Python3
+    - python *
     - {{ stdlib('c') }}
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
@@ -48,7 +52,7 @@ outputs:
     test:
       commands:
         # shared library; copied from target-specific location
-        - test -f $PREFIX/lib/libflang_rt.runtime.so    # [linux]
+        - test -f $PREFIX/lib/libflang_rt.runtime.so
 
   - name: flang-rt_{{ target_platform }}
     build:
@@ -58,11 +62,15 @@ outputs:
       - lib/clang/{{ major }}/lib/x86_64-unknown-linux-gnu/libflang_rt.runtime.so               # [linux64]
       - lib/clang/{{ major }}/lib/aarch64-unknown-linux-gnu/libflang_rt.runtime.a               # [aarch64]
       - lib/clang/{{ major }}/lib/aarch64-unknown-linux-gnu/libflang_rt.runtime.so              # [aarch64]
+      # Fortran intrinsic modules (iso_fortran_env, iso_c_binding, ieee_*, ...); built by flang-rt since LLVM 23
+      - lib/clang/{{ major }}/finclude/flang/x86_64-unknown-linux-gnu                           # [linux64]
+      - lib/clang/{{ major }}/finclude/flang/aarch64-unknown-linux-gnu                          # [aarch64]
+      - Library/lib/clang/{{ major }}/finclude/flang/{{ win_triple }}                     # [win]
       # corresponding to different flavours of the MSVC runtime, i.e. `/MD`, `/MDd`, `/MT`, `/MTd`
-      - Library/lib/clang/{{ major }}/lib/x86_64-pc-windows-msvc/flang_rt.runtime.static.lib    # [win]
-      - Library/lib/clang/{{ major }}/lib/x86_64-pc-windows-msvc/flang_rt.runtime.dynamic.lib   # [win]
-      - Library/lib/clang/{{ major }}/lib/x86_64-pc-windows-msvc/flang_rt.runtime.static_dbg.lib    # [win]
-      - Library/lib/clang/{{ major }}/lib/x86_64-pc-windows-msvc/flang_rt.runtime.dynamic_dbg.lib   # [win]
+      - Library/lib/clang/{{ major }}/lib/{{ win_triple }}/flang_rt.runtime.static.lib    # [win]
+      - Library/lib/clang/{{ major }}/lib/{{ win_triple }}/flang_rt.runtime.dynamic.lib   # [win]
+      - Library/lib/clang/{{ major }}/lib/{{ win_triple }}/flang_rt.runtime.static_dbg.lib    # [win]
+      - Library/lib/clang/{{ major }}/lib/{{ win_triple }}/flang_rt.runtime.dynamic_dbg.lib   # [win]
     requirements:
       build:
         # for strong run-exports
@@ -76,16 +84,17 @@ outputs:
         - clang =={{ version }}
         - flang =={{ version }}
     test:
+      requires:
+        - {{ compiler('c') }}    # [linux]
+      files:
+        - test_modules.f90
+        - test_flang_rt.sh       # [unix]
+        - test_flang_rt.bat      # [win]
       commands:
-        # target-specific runtime library location (default for flang)
-        - test -f $PREFIX/lib/clang/{{ major }}/lib/x86_64-unknown-linux-gnu/libflang_rt.runtime.a                      # [linux64]
-        - test -f $PREFIX/lib/clang/{{ major }}/lib/x86_64-unknown-linux-gnu/libflang_rt.runtime.so                     # [linux64]
-        - test -f $PREFIX/lib/clang/{{ major }}/lib/aarch64-unknown-linux-gnu/libflang_rt.runtime.a                     # [aarch64]
-        - test -f $PREFIX/lib/clang/{{ major }}/lib/aarch64-unknown-linux-gnu/libflang_rt.runtime.so                    # [aarch64]
-        - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\x86_64-pc-windows-msvc\flang_rt.runtime.static.lib exit 1    # [win]
-        - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\x86_64-pc-windows-msvc\flang_rt.runtime.dynamic.lib exit 1   # [win]
-        - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\x86_64-pc-windows-msvc\flang_rt.runtime.static_dbg.lib exit 1    # [win]
-        - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\x86_64-pc-windows-msvc\flang_rt.runtime.dynamic_dbg.lib exit 1   # [win]
+        # runtime libraries and intrinsic modules in flang's default locations; compile (all platforms),
+        # link and run (Linux; Windows links through flang-activation) a program using the modules
+        - bash test_flang_rt.sh {{ major }}                      # [unix]
+        - call test_flang_rt.bat {{ major }} {{ win_triple }}    # [win]
 
 about:
   home: https://flang.llvm.org

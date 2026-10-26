@@ -1,0 +1,6 @@
+# PR CI only - flang 23.1.4 from AnacondaRecipes/flang-feedstock#9 (graph of head bbc9dbb) and
+# mlir/libmlir23 23.1.4 from AnacondaRecipes/mlir-feedstock#16 (graph of head 6b0d66e);
+# REMOVE before merge (neither is on pkgs/main yet)
+channels:
+  - https://package-build.internal.anaconda.com/pkg-orchestrator/v1/channels/graphs/9c74a65f-0e42-4939-9417-49ea818e9e7b
+  - https://package-build.internal.anaconda.com/pkg-orchestrator/v1/channels/graphs/78f3453a-6303-40a3-a748-d7bf72aeadc8

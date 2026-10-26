@@ -1,5 +1,10 @@
 @echo on
 
+REM LLVM 23 force-includes stl-overrides.h (GNU __attribute__) into every C++ TU; MSVC cl cannot parse it.
+REM Use clang-cl from the host clang 23 (clangdev) instead, with the MSVC toolchain environment.
+set "CC=%LIBRARY_BIN%\clang-cl.exe"
+set "CXX=%LIBRARY_BIN%\clang-cl.exe"
+
 mkdir build
 cd build
 
@@ -18,6 +23,8 @@ cmake -G "Ninja" ^
     -DLLVM_DIR=%LIBRARY_LIB%/cmake/llvm ^
     -DLLVM_ENABLE_RUNTIMES="flang-rt" ^
     -DFLANG_RT_INCLUDE_TESTS=OFF ^
+    -DFLANG_RT_FORTRAN_MODULES=ON ^
+    -DRUNTIMES_FORTRAN_MODULES=ON ^
     ..\runtimes
 if %ERRORLEVEL% neq 0 exit 1
 
