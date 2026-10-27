@@ -9,7 +9,10 @@ github:
 conda_build:
   error_overlinking: true
 conda_forge_output_validation: true
+provider:
+  win_arm64: default
 # necessary to build flang-rt_<target> on windows, as it's the only output, and noarch
 noarch_platforms:
   - linux_64
   - win_64
+  - win_arm64
