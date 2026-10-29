@@ -1,5 +1,6 @@
 {% set version = "21.1.8" %}
 {% set major = version.split(".")[0] %}
+{% set win_target_triple = "aarch64-pc-windows-msvc" if target_platform == "win-arm64" else "x86_64-pc-windows-msvc" %}
 
 package:
   name: flang-rt-split
@@ -10,7 +11,7 @@ source:
   sha256: 7ba3f2a8d8fda88be18a31d011e8195d3b7f87f9fa92b20c94cba2d7f65b0e3f
 
 build:
-  number: 0
+  number: 1
   # intentionally only windows (main target) & linux (debuggability)
   skip: true  # [osx]
 
@@ -59,10 +60,10 @@ outputs:
       - lib/clang/{{ major }}/lib/aarch64-unknown-linux-gnu/libflang_rt.runtime.a               # [aarch64]
       - lib/clang/{{ major }}/lib/aarch64-unknown-linux-gnu/libflang_rt.runtime.so              # [aarch64]
       # corresponding to different flavours of the MSVC runtime, i.e. `/MD`, `/MDd`, `/MT`, `/MTd`
-      - Library/lib/clang/{{ major }}/lib/x86_64-pc-windows-msvc/flang_rt.runtime.static.lib    # [win]
-      - Library/lib/clang/{{ major }}/lib/x86_64-pc-windows-msvc/flang_rt.runtime.dynamic.lib   # [win]
-      - Library/lib/clang/{{ major }}/lib/x86_64-pc-windows-msvc/flang_rt.runtime.static_dbg.lib    # [win]
-      - Library/lib/clang/{{ major }}/lib/x86_64-pc-windows-msvc/flang_rt.runtime.dynamic_dbg.lib   # [win]
+      - Library/lib/clang/{{ major }}/lib/{{ win_target_triple }}/flang_rt.runtime.static.lib    # [win]
+      - Library/lib/clang/{{ major }}/lib/{{ win_target_triple }}/flang_rt.runtime.dynamic.lib   # [win]
+      - Library/lib/clang/{{ major }}/lib/{{ win_target_triple }}/flang_rt.runtime.static_dbg.lib    # [win]
+      - Library/lib/clang/{{ major }}/lib/{{ win_target_triple }}/flang_rt.runtime.dynamic_dbg.lib   # [win]
     requirements:
       build:
         # for strong run-exports
@@ -82,10 +83,10 @@ outputs:
         - test -f $PREFIX/lib/clang/{{ major }}/lib/x86_64-unknown-linux-gnu/libflang_rt.runtime.so                     # [linux64]
         - test -f $PREFIX/lib/clang/{{ major }}/lib/aarch64-unknown-linux-gnu/libflang_rt.runtime.a                     # [aarch64]
         - test -f $PREFIX/lib/clang/{{ major }}/lib/aarch64-unknown-linux-gnu/libflang_rt.runtime.so                    # [aarch64]
-        - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\x86_64-pc-windows-msvc\flang_rt.runtime.static.lib exit 1    # [win]
-        - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\x86_64-pc-windows-msvc\flang_rt.runtime.dynamic.lib exit 1   # [win]
-        - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\x86_64-pc-windows-msvc\flang_rt.runtime.static_dbg.lib exit 1    # [win]
-        - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\x86_64-pc-windows-msvc\flang_rt.runtime.dynamic_dbg.lib exit 1   # [win]
+        - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\{{ win_target_triple }}\flang_rt.runtime.static.lib exit 1    # [win]
+        - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\{{ win_target_triple }}\flang_rt.runtime.dynamic.lib exit 1   # [win]
+        - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\{{ win_target_triple }}\flang_rt.runtime.static_dbg.lib exit 1    # [win]
+        - if not exist %LIBRARY_LIB%\clang\{{ major }}\lib\{{ win_target_triple }}\flang_rt.runtime.dynamic_dbg.lib exit 1   # [win]
 
 about:
   home: https://flang.llvm.org
